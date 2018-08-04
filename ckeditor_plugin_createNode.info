@@ -1,0 +1,12 @@
+name = ckeditor_plugin_createNode module
+description = ckeditor_plugin_createNode  module
+package = ckeditor_plugin_createNode module
+core = 7.x
+dependencies[] = ckeditor
+dependencies[] = ckeditor_plugin
+
+files[] = ckeditor_plugin_createNode.module
+files[] = ckeditor_plugin_createNode_ckeditorPlugin.class.php
+
+; Always available CSS
+stylesheets[all][] = ckeditor_plugin_createNode.css

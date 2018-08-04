@@ -1,0 +1,145 @@
+Ckeditor_plugin_createNode
+
+This Drupal module can be used to add text manipulation options to the ckeditor module.
+This module uses the default class created in ckeditor_plugin module.
+The main functions in the class are:
+	- public function validatePluginAction($node)
+	- public function executePluginAction($node)
+	
+	These 2 functions will be executed in de module file with the hooks
+	- hook_node_validation
+	- hook_node_presave
+	
+DEVELOPER info for creating new text edit options with the module ckeditor_plugin:
+	For creating new textedit options you can copy this module and change it.
+ 
+Button location:
+    create the next map structure:
+        plugins
+            'moduleName'  /** this name must be added in the module file.
+                images
+
+    In the map 'moduleName' create the file plugin.js.
+    In de the map images you can plase the 16x16 png buttons who will bee used to display it to the user in ckeditor
+
+PLUGIN.JS
+    This files has a basic structure and 1 or more options to be added.
+    Basic structure:
+        CKEDITOR.plugins.add( 'createNode',                /** createNode musst bee changed in 'moduleName' (see button location 'moduleName')
+{
+	requires : [ 'styles', 'button' ],
+        icons:'createNode',                                /** (see 'moduleName')
+        
+	init : function( editor )
+	{
+             var text = " ";
+
+
+    Example option to be added:
+                //Node Title
+            editor.ui.addButton( 'NT',                     
+				/** change NT to an uniek name you wish to use for your text manipulation function
+            {
+              label: 'Node Title',
+              command: 'NT',
+              icon: this.path + 'images/NT.png',			/** button image location
+              toolbar: 'createNode'                        /** give it a name, i haven't used this variable
+            });
+            editor.addCommand( 'NT', {                     /** Change NT to the same as mentioned in 'editor.ui.addButton'
+                exec : function () {
+                        text = editor.getSelection().getSelectedText();
+                        editor.insertHtml('<strong>NTB</strong>.'+ text +'<strong>NTE</strong>.');
+                                                           /** with this command you can add a mark arround the selected text.
+                                                           /** using a function is posible to change the selected text.
+                }
+            });
+FILE: Ckeditor_plugin_createNode.module
+    function ckeditor_plugin_createNode_ckeditor_settings_alter
+	    In this function you will tell ckeditor to used this plugin and where to find the button info.
+		The function ckeditor_plugin_createNode_ckeditor_Plugin is used to give ckeditor the info in the correct format.
+
+	function ckeditor_plugin_createNode_node_validate
+		This will start the class public function validatePluginAction.
+			
+	function ckeditor_plugin_createNode_node_presave
+		This will start the class public function executePluginAction.
+			
+			
+FILE: Ckeditor_plugin_createNode_ckeditorPlugin.class.php
+    This class is used because the system uses the filename to search for the class in this file.
+    
+    class ckeditor_plugin_createNode_ckeditorPlugin extends ckeditor_plugin_ckeditorPlugin{
+        public function __construct() {
+            parent::__construct();
+        }
+    }
+
+    The next class will get the name as mentioned in 'editor.ui.addButton' in 'Example option to be added'
+    class nt extends ckeditor_plugin_ckeditorPlugin{
+
+        public function __construct() {
+            parent::__construct();
+            $this->startString = '<strong>NTB</strong>.';   /** this code will be searched to tell that this is the start position
+            $this->endString = '<strong>NTE</strong>.';     /** this code will be searched to tell that this is the end position
+            $this->grouprelationname = array('nb');  
+            $this->label = 'Node Title';
+            $this->command = 'NT';                          /** see class name
+            $this->icon = 'images/NT.png';                  /** location and button name
+            $this->validationcheck = FALSE;
+        }
+        public function validatePlugin(&$contentList,&$node){
+            This will check if the startString, endString and grouprelationname are selected in the bodytext. If one is missing it will tell the user.
+            With $this->validatePlugin($contentList,$node) the system checks if there are additional validation checks for that class.
+        }
+	Default functions for checking and collecting the content.
+		public function executePluginAction($node){
+			This function will be executed when validation gives no errors.
+			This is the basic function to change the node.
+		}
+		public function getBodyContent(&$node){
+			Get the content of the body.
+		}
+		public function replaceBodyContent(&$node, $body){
+			change the original body with the changed body.
+		}
+
+		public function getInfoDeclaredClasses(){
+			Collect all the class to be used in the ckeditor_plugin.
+		}
+		public function checkPosition(&$body, &$contentList){
+			Check if the selected text is not marked with diverend markers. 
+			For example 2 diverend startpositions are found. In this case the system will not now if the text selections is correct. 
+		}
+		public function checkGroupRelations(&$body, &$contentList){
+			Checks if the checked class has an relation with an other class and will not
+			execute correctly if the group relation selection is missing.
+		}
+		public function buildPositionList(&$body){
+			get the Startposion and endposion text and request all positions.
+
+		}
+		
+		public function getPosition(&$body,$string,&$list){
+			Find the positionand add it to the list with all found positions.
+		}
+		public function createContentList($list, $body){
+			Check the found positions en create an usable array list.
+			
+		}
+		public function getContent(&$body ){
+			Get the text between the startpostion and endposion.
+			
+		}
+		public function stringReplace(&$body){
+			Remove the mark from the text.
+			if in function __construct the item 'replace' is added then the marked text will be replace by the content of the item 'replace'.
+			
+			for example: After creating a new node the title is changed into a link, to the new created node. And the body text is completely removed.         
+		}
+
+		public function validatePlugin(&$contentList,&$node){
+			This function is added to have the posibility to add class specific validationrules.
+		}
+		public function pluginAction(&$contentList,&$node){
+			This funcntion is added to have the posibility to add class specific functions.
+		}

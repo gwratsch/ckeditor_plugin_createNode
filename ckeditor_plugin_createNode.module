@@ -1,0 +1,54 @@
+<?php
+include 'ckeditor_plugin_createNode_ckeditorPlugin.class.php';
+/** tell ckeditor to use this plugin module
+ * In the settings of ckeditor you will find the buttons. To be visible for the user you will have to add them to the used group. for example 'filtered HTML' or 'FULL HTML'
+ */
+function ckeditor_plugin_createNode_ckeditor_Plugin() {
+  return array(
+    'createNode' => array(
+      // Name of the plugin used to write it.
+      'name' => 'createNode',
+      // Description of the plugin - it would be displayed in the plugins management section of profile settings.
+      'desc' => t('Plugin description'),
+      // The full URL to the CKEditor plugins directory, with the trailing slash.
+      'path' => base_path() . drupal_get_path('module', 'ckeditor_plugin_createNode') . '/plugins/createNode/',
+      'buttons' => array(
+        'NT' => array(
+          // Path to the button icon. Relative to the plugin directory 'path' unless 'icon_path' is specified.
+          'icon' => 'images/NT.png',
+          // Optional full path to the directory the icon is located in.
+          //'icon_path' => base_path() . drupal_get_path('theme', 'z_custom_ckeditor') . '/knowledgeblock/images/',
+          'label' => 'Node Title',
+        ),
+        'NB' => array(
+          // Path to the button icon. Relative to the plugin directory 'path' unless 'icon_path' is specified.
+          'icon' => 'images/NB.png',
+          // Optional full path to the directory the icon is located in.
+          //'icon_path' => base_path() . drupal_get_path('theme', 'z_custom_ckeditor') . '/knowledgeblock/images/',
+          'label' => 'Node body',
+        )
+      )
+    )
+  );
+}
+//hook_ckeditor_settings_alter
+function ckeditor_plugin_createNode_ckeditor_settings_alter(&$settings, $conf){
+    $loadplugin = ckeditor_plugin_createNode_ckeditor_Plugin();
+    $settings['loadPlugins']['createNode']=$loadplugin['createNode'];
+    $conf['loadPlugins']['createNode']=$loadplugin['createNode'];
+}
+
+//hook_node_validate
+function ckeditor_plugin_createNode_node_validate($node, $form, &$form_state){
+
+    $ckeditor_plugin_createNode_ckeditorObject = new ckeditor_plugin_createNode_ckeditorPlugin();
+    $ckeditor_plugin_createNode_ckeditorObject->validatePluginAction($node);
+}
+
+//hook_node_presave
+function ckeditor_plugin_createNode_node_presave($node){
+    if(array_key_exists('nid', $node) && $node->nid >0){
+        $ckeditor_plugin_createNode_ckeditorObject = new ckeditor_plugin_createNode_ckeditorPlugin();
+        $node = $ckeditor_plugin_createNode_ckeditorObject->executePluginAction($node);
+    }
+}
